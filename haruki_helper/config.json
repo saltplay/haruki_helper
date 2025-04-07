@@ -1,0 +1,8 @@
+{
+  "scripts": [
+    "script/systemCheck.js",
+    "script/pathCheck.js",
+    "script/updateAssetsPaths.js",
+    "script/moveFiles.js"
+  ]
+}
