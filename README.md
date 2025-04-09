@@ -4,17 +4,10 @@
 
 1. 确保你已经安装了SillyTavern
 2. 根据你的系统选择对应的安装脚本
-    1. mac/linux
 
-        ```zsh
-        git clone https://github.com/saltglow/haruki_helper.git && cd haruki_helper && npm start
-        ```
-
-    2. windows
-
-        ```zsh
-        git clone https://github.com/saltglow/haruki_helper.git && cd haruki_helper && npm start
-        ```
+   ```zsh
+   git clone https://github.com/saltglow/haruki_helper.git && cd haruki_helper && npm start
+   ```
 
 3. 安装完成之后,记得刷新酒馆
 
