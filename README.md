@@ -7,13 +7,13 @@
     1. mac/linux
 
         ```zsh
-          git clone https://github.com/saltglow/haruki_helper.git && cd haruki_helper && npm start
+           git clone https://github.com/saltglow/haruki_helper.git && cd haruki_helper && npm start
         ```
 
     2. windows
 
         ```zsh
-            git clone https://github.com/saltglow/haruki_helper.git && cd haruki_helper && npm start
+           git clone https://github.com/saltglow/haruki_helper.git && cd haruki_helper && npm start
         ```
 
 3. 安装完成之后,记得刷新酒馆
