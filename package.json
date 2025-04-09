@@ -1,16 +1,16 @@
 {
-  "name": "haruki_helper",
-  "version": "1.0.0",
-  "description": "SillyTavern regex for haruki deployment",
-  "main": "script/start.js",
-  "bin": {
-    "haruki_helper": "script/start.js"
-  },
-  "scripts": {
-    "start": "node script/start.js"
-  },
-  "keywords": [],
-  "author": "saltplay",
-  "license": "ISC",
-  "type": "commonjs"
+    "name": "haruki_helper",
+    "version": "1.0.0",
+    "description": "SillyTavern regex for haruki deployment",
+    "main": "script/monitor.js",
+    "bin": {
+        "haruki_helper": "script/monitor.js"
+    },
+    "scripts": {
+        "start": "node script/monitor.js"
+    },
+    "keywords": [],
+    "author": "saltplay",
+    "license": "ISC",
+    "type": "commonjs"
 }

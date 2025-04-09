@@ -1,10 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-const {exec} = require('child_process');
+const fs = require("fs");
+const path = require("path");
+const { exec } = require("child_process");
 
 const scriptDir = path.dirname(__filename);
-const filePath = path.join(scriptDir, 'SillyTavernPath.txt');
-const configPath = path.join(__dirname, '../runtime_config.json');
+const filePath = path.join(scriptDir, "SillyTavernPath.txt");
+const configPath = path.join(__dirname, "../runtime_config.json");
 
 /**
  * 检查文件路径是否有效
@@ -15,8 +15,8 @@ function checkFilePath(filePath) {
     if (!fs.existsSync(filePath)) return 1; // 文件不存在
     const stats = fs.statSync(filePath);
     if (stats.size === 0) return 2; // 文件为空
-    const fileContent = fs.readFileSync(filePath, 'utf8').trim();
-    if (!fileContent.endsWith('SillyTavern')) return 3; // 路径不以 SillyTavern 结尾
+    const fileContent = fs.readFileSync(filePath, "utf8").trim();
+    if (!fileContent.endsWith("SillyTavern")) return 3; // 路径不以 SillyTavern 结尾
     if (!fs.existsSync(fileContent)) return 4; // 用户提供的路径不存在
     return 0; // 路径有效
 }
@@ -28,15 +28,15 @@ function checkFilePath(filePath) {
  */
 function openFile(filePath, systemType) {
     try {
-        if (systemType === 'Darwin') {
+        if (systemType === "Darwin") {
             exec(`open "${filePath}"`); // macOS
-        } else if (systemType === 'win32') {
+        } else if (systemType === "Windows_NT") {
             exec(`notepad.exe "${filePath}"`); // Windows
         } else {
             console.log(`请手动打开以下文件并输入路径: ${filePath}`); // 其他系统
         }
     } catch (error) {
-        console.error('Failed to open file:', error);
+        console.error("Failed to open file:", error);
     }
 }
 
@@ -46,13 +46,13 @@ function openFile(filePath, systemType) {
  */
 function updateConfig(fileContent) {
     try {
-        const configData = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        const configData = JSON.parse(fs.readFileSync(configPath, "utf8"));
 
         // 定义需要更新的路径配置
         const pathUpdates = {
             sillyTavernPath: fileContent,
-            settings: 'data/default-user/settings.json',
-            'default-user': 'data/default-user'
+            settings: "data/default-user/settings.json",
+            "default-user": "data/default-user",
         };
 
         // 遍历并更新路径配置
@@ -63,7 +63,7 @@ function updateConfig(fileContent) {
         // 写入更新后的配置
         fs.writeFileSync(configPath, JSON.stringify(configData, null, 2));
     } catch (error) {
-        console.error('Failed to update config:', error);
+        console.error("Failed to update config:", error);
     }
 }
 
@@ -72,19 +72,20 @@ function main() {
     const result = checkFilePath(filePath);
 
     if (result !== 0) {
-        const content = '请输入SillyTavern路径(例如/Users/xxx/Tools/SillyTavern),注意:要以SillyTavern结尾,不能带有/,不能以换行结尾';
+        const content =
+            "请输入SillyTavern路径(例如/Users/xxx/Tools/SillyTavern),注意:要以SillyTavern结尾,不能带有/,不能以换行结尾";
         if (!fs.existsSync(filePath) || fs.statSync(filePath).size === 0) {
             try {
                 fs.writeFileSync(filePath, content);
             } catch (error) {
-                console.error('Failed to write file:', error);
+                console.error("Failed to write file:", error);
             }
         }
 
-        const configData = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        const configData = JSON.parse(fs.readFileSync(configPath, "utf8"));
         openFile(filePath, configData.systemType);
     } else {
-        const fileContent = fs.readFileSync(filePath, 'utf8').trim();
+        const fileContent = fs.readFileSync(filePath, "utf8").trim();
         updateConfig(fileContent);
     }
 

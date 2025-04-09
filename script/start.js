@@ -1,9 +1,9 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // 读取配置文件中的脚本列表
-const configPath = path.join(__dirname, '../config.json');
-const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+const configPath = path.join(__dirname, "../config.json");
+const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
 const scripts = config.scripts;
 
 let allPassed = true;
@@ -13,20 +13,20 @@ for (const scriptPath of scripts) {
   try {
     const result = require(path.resolve(scriptPath));
     if (result !== 1) {
-      console.error(`Script ${scriptPath} returned ${result}, stopping.`);
+      console.error(`脚本 ${scriptPath} 返回 ${result}，停止执行。`);
       allPassed = false;
       break;
     }
   } catch (error) {
-    console.error(`Error executing ${scriptPath}:`, error);
+    console.error(`执行脚本 ${scriptPath} 时出错：`, error);
     allPassed = false;
     break;
   }
 }
 
 if (allPassed) {
-  console.log('All scripts passed. Continuing execution...');
+  console.log("所有脚本执行成功，继续执行...");
   // 这里可以添加后续的逻辑
 } else {
-  console.log('Execution stopped due to failed script.');
+  console.log("由于脚本失败，执行停止。");
 }
