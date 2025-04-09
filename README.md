@@ -3,9 +3,9 @@
 ## 安装
 
 1. 确保你已经安装了SillyTavern
-2. 根据你的系统选择对应的安装脚本
+2. 本项目不区分系统，脚本全平台通用
 
-   ```zsh
+   ```bash
    git clone https://github.com/saltglow/haruki_helper.git && cd haruki_helper && npm start
    ```
 
