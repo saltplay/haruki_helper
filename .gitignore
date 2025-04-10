@@ -137,3 +137,12 @@ dist
 runtime_config.json
 script/SillyTavernPath.txt
 .DS_Store
+/.idea/.gitignore
+/.idea/haruki_helper.iml
+/.idea/jsLibraryMappings.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/prettier.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/stylesheetLinters/stylelint.xml
+/.idea/vcs.xml
