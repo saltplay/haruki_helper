@@ -50,15 +50,17 @@ function updateConfig(fileContent) {
 
         // 定义需要更新的路径配置
         const pathUpdates = {
-            sillyTavernPath: fileContent,
-            settings: "data/default-user/settings.json",
-            "default-user": "data/default-user",
+            settings: path.join(fileContent, "data/default-user/settings.json"),
+            "default-user": path.join(fileContent, "data/default-user"),
         };
 
         // 遍历并更新路径配置
         for (const [key, value] of Object.entries(pathUpdates)) {
-            configData.paths[key] = path.join(fileContent, value);
+            configData.paths[key] = value;
         }
+
+        // 直接覆盖 sillyTavernPath
+        configData.paths.sillyTavernPath = fileContent;
 
         // 写入更新后的配置
         fs.writeFileSync(configPath, JSON.stringify(configData, null, 2));
@@ -72,6 +74,10 @@ function main() {
     const result = checkFilePath(filePath);
 
     if (result !== 0) {
+        const configData = JSON.parse(fs.readFileSync(configPath, "utf8"));
+        configData.paths.sillyTavernPath = ""; // 设置为空字符串
+        fs.writeFileSync(configPath, JSON.stringify(configData, null, 2));
+
         const content =
             "请输入SillyTavern路径(例如/Users/xxx/Tools/SillyTavern),注意:要以SillyTavern结尾,不能带有/,不能以换行结尾";
         if (!fs.existsSync(filePath) || fs.statSync(filePath).size === 0) {
@@ -82,7 +88,6 @@ function main() {
             }
         }
 
-        const configData = JSON.parse(fs.readFileSync(configPath, "utf8"));
         openFile(filePath, configData.systemType);
     } else {
         const fileContent = fs.readFileSync(filePath, "utf8").trim();

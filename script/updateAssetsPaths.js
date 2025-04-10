@@ -20,11 +20,12 @@ function updateAssetsPaths() {
             return fs.statSync(path.join(assetsDir, folder)).isDirectory();
         });
 
-        // 更新 move 字段
-        configData.move = {};
+        // 更新 move 字段，避免覆盖之前已有的配置
+        const newMoveConfig = {};
         assetsFolders.forEach(folder => {
-            configData.move[`assets/${folder}`] = path.join(defaultUserPath, folder);
+            newMoveConfig[`assets/${folder}`] = path.join(defaultUserPath, folder);
         });
+        configData.move = Object.assign({}, configData.move, newMoveConfig);
 
         // 写入更新后的配置
         fs.writeFileSync(configPath, JSON.stringify(configData, null, 2));
