@@ -25,6 +25,11 @@ function checkFilePath(filePath) {
  */
 function updateConfig(fileContent) {
   try {
+    if (!fs.existsSync(configPath)) {
+      console.error("runtime_config.json does not exist");
+      return;
+    }
+
     const configData = JSON.parse(fs.readFileSync(configPath, "utf8"));
 
     // 定义需要更新的路径配置
@@ -50,6 +55,11 @@ function updateConfig(fileContent) {
 
 // 主逻辑
 function main() {
+  if (!fs.existsSync(configPath)) {
+    console.error("runtime_config.json does not exist");
+    return 1;
+  }
+
   const configData = JSON.parse(fs.readFileSync(configPath, "utf8"));
 
   const result = checkFilePath(filePath);
@@ -71,8 +81,7 @@ function main() {
     updateConfig(fileContent);
   }
 
-  // 修改: 直接返回1，因为只有Linux会运行到这里
   return 1;
 }
 
-module.exports = main();
+module.exports = main;
