@@ -4,6 +4,6 @@
     "script/LinuxRun.js",
     "script/pathCheck.js",
     "script/updateAssetsPaths.js",
-    "script/moveFiles.js"
+    "script/copyFiles.js"
   ]
 }

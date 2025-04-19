@@ -1,23 +1,21 @@
-// 暂时换成了copy.js没有问题的话,就考虑删除move,js
-
 const fs = require("fs");
 const path = require("path");
 
 const configPath = path.join(__dirname, "../runtime_config.json");
 
 /**
- * 根据 config 中的 move 配置，将文件夹下的文件全部移动
+ * 根据 config 中的 copy 配置，将文件夹下的文件全部复制
  */
-function moveFiles() {
+function copyFiles() {
     try {
         // 读取 runtime_config.json
         const configData = JSON.parse(fs.readFileSync(configPath, "utf8"));
 
-        // 获取 move 配置
-        const moveConfig = configData.move;
+        // 获取 copy 配置
+        const copyConfig = configData.copy || configData.move; // 兼容原配置字段
 
-        // 遍历 move 配置
-        for (const [source, destination] of Object.entries(moveConfig)) {
+        // 遍历 copy 配置
+        for (const [source, destination] of Object.entries(copyConfig)) {
             const sourcePath = path.join(__dirname, "../", source);
             const destinationPath = destination;
 
@@ -35,24 +33,24 @@ function moveFiles() {
             // 读取源路径下的所有文件
             const files = fs.readdirSync(sourcePath);
 
-            // 移动文件
+            // 复制文件
             files.forEach((file) => {
                 const sourceFile = path.join(sourcePath, file);
                 const destinationFile = path.join(destinationPath, file);
 
-                // 移动文件
-                fs.renameSync(sourceFile, destinationFile);
-                console.log(`Moved: ${sourceFile} -> ${destinationFile}`);
+                // 复制文件（保留原文件）
+                fs.copyFileSync(sourceFile, destinationFile);
+                console.log(`Copied: ${sourceFile} -> ${destinationFile}`);
             });
         }
 
-        console.log("All files moved successfully.");
+        console.log("All files copied successfully.");
         return 1; // 返回1表示运行正常
     } catch (error) {
-        console.error("Failed to move files:", error);
+        console.error("Failed to copy files:", error);
         return 0; // 返回0表示运行失败
     }
 }
 
-// 执行移动操作
-module.exports = moveFiles();
+// 执行复制操作
+module.exports = copyFiles();
