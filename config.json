@@ -1,1 +1,1 @@
-{"scripts":["script/systemCheck.js","script/json_compression.js","script/LinuxRun.js","script/pathCheck.js","script/updateAssetsPaths.js","script/copyFiles.js"]}
+{"scripts":["script/systemCheck.js","script/LinuxRun.js","script/pathCheck.js","script/updateAssetsPaths.js","script/copyFiles.js"]}
