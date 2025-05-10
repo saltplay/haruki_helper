@@ -6,7 +6,7 @@
 2. 本项目不区分系统，脚本全平台通用
 
      ```bash
-     git clone https://github.com/saltglow/haruki_helper.git && cd haruki_helper && npm start
+     git clone https://github.com/saltplay/haruki_helper.git && cd haruki_helper && npm start
      ```
 
 3. 如果一次没有成功,请输入以下启动命令
