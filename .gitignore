@@ -3,6 +3,7 @@ runtime_config.json
 script/SillyTavernPath.txt
 a_assets/*
 c_assets/*
+*assets/*
 
 # Logs
 logs

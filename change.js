@@ -1,6 +1,12 @@
 const fs = require("fs");
 const path = require("path");
 
+
+// PREFIX 可以修改，例如这样 '【夏瑾】';
+const PREFIX = '【kimini】';
+
+const ESCAPED_PREFIX = PREFIX.replace(/[\$\(\)\[\]\{\}]/g, '\\$&'); 
+
 // 使用 __dirname 获取当前脚本路径
 const scriptDir = __dirname;
 
@@ -52,21 +58,21 @@ function transformFileName(name) {
         .replace(/\(\d+\)/g, ""); // 新增：删除所有位置的 (数字)
 
     // 添加前缀并重新添加扩展名
-    newName = `【夏瑾】${newName}.json`;
+    newName = `${PREFIX}${newName}.json`;
 
-    // 修复：删除多余的“夏瑾”字符串
-    newName = newName.replace(/【夏瑾】夏瑾/g, "【夏瑾】");
+    // 修复：删除多余的“夏瑾”字符串（使用转义前缀）
+    newName = newName.replace(new RegExp(`${ESCAPED_PREFIX}夏瑾`, 'g'), PREFIX);
 
-    // 新增：修复重复的“【夏瑾】【夏瑾】”
-    newName = newName.replace(/【夏瑾】{2,}/g, "【夏瑾】");
+    // 新增：修复重复的“【夏瑾】【夏瑾】”（使用转义前缀）
+    newName = newName.replace(new RegExp(`${ESCAPED_PREFIX}{2,}`, 'g'), PREFIX);
 
     return newName;
 }
 
 // 新增函数：确保 scriptName 以 【夏瑾】 开头
 function ensureScriptNamePrefix(jsonContent) {
-    if (jsonContent.scriptName && !jsonContent.scriptName.startsWith("【夏瑾】")) {
-        jsonContent.scriptName = "【夏瑾】" + jsonContent.scriptName;
+    if (jsonContent.scriptName && !jsonContent.scriptName.startsWith(PREFIX)) {
+        jsonContent.scriptName = `${PREFIX}` + jsonContent.scriptName;
     }
     return jsonContent;
 }
@@ -107,8 +113,9 @@ files.forEach((file) => {
             // 判断是否是脚本规则类文件（根据 scriptName、findRegex 和 replaceString 字段）
             if (isScriptRuleFile(jsonContent)) {
                 const cNewPath = path.join(cTargetDir, newName);
-                fs.copyFileSync(newPath, cNewPath);
-                console.log(`已复制到 c_assets: ${newName}`);
+                // 修改：将复制改为移动操作
+                fs.renameSync(newPath, cNewPath);
+                console.log(`已移动到 c_assets: ${newName}`);
             }
 
         } catch (error) {
@@ -127,8 +134,8 @@ targetFiles.forEach((file) => {
     const oldPath = path.join(targetDir, file);
 
     // 修正文件名，删除多余的“夏瑾”以及重复的“【夏瑾】【夏瑾】”
-    let newName = file.replace(/【夏瑾】夏瑾/g, "【夏瑾】");
-    newName = newName.replace(/【夏瑾】【夏瑾】/g, "【夏瑾】"); // 新增逻辑
+    let newName = file.replace(new RegExp(`${ESCAPED_PREFIX}夏瑾`, 'g'), PREFIX);
+    newName = newName.replace(new RegExp(`${ESCAPED_PREFIX}{2,}`, 'g'), PREFIX);
 
     const newPath = path.join(targetDir, newName);
 
@@ -158,8 +165,8 @@ function fixDirectoryFilenames(dirPath, dirName) {
         const oldPath = path.join(dirPath, file);
 
         // 修正文件名，删除多余的“夏瑾”以及重复的“【夏瑾】【夏瑾】”
-        let newName = file.replace(/【夏瑾】夏瑾/g, "【夏瑾】");
-        newName = newName.replace(/【夏瑾】【夏瑾】/g, "【夏瑾】"); // 新增逻辑
+        let newName = file.replace(new RegExp(`(${ESCAPED_PREFIX})+夏瑾`, 'g'), PREFIX);
+        newName = newName.replace(new RegExp(`(${ESCAPED_PREFIX}){2,}`, 'g'), PREFIX);
 
         const newPath = path.join(dirPath, newName);
 
@@ -239,6 +246,9 @@ function moveScriptRulesFromBToC() {
             const newPath = path.join(cTargetDir, file);
             fs.renameSync(oldPath, newPath);
             console.log(`已从 ${path.basename(targetDir)} 移动到 c_assets: ${file}`);
+            // 新增：立即触发文件名修复
+            fixDirectoryFilenames(cTargetDir, path.basename(cTargetDir));
+
         }
     });
 
@@ -250,4 +260,48 @@ function moveScriptRulesFromBToC() {
 
     // 在脚本的最后增加 module.exports = 1，表示成功执行
     module.exports = 1;
+
 }
+
+// 在脚本末尾调用双重修复
+function removeDuplicatePrefixes() {
+    const dirsToCheck = [targetDir, cTargetDir].filter(dir => fs.existsSync(dir));
+
+    dirsToCheck.forEach(dir => {
+        const files = fs.readdirSync(dir);
+        files.forEach(file => {
+            const oldPath = path.join(dir, file);
+            if (path.extname(file).toLowerCase() !== ".json") return;
+
+            let newName = file.replace(new RegExp(`(${ESCAPED_PREFIX})+`, 'g'), PREFIX);
+            const newPath = path.join(dir, newName);
+
+            // 新增：始终使用最新路径
+            const currentPath = fs.existsSync(newPath) ? newPath : oldPath;
+
+            if (newName !== file) {
+                try {
+                    fs.renameSync(oldPath, newPath);
+                    console.log(`双重修复: ${file} -> ${newName}`);
+                } catch (error) {
+                    console.error(`双重修复失败: ${file} -> ${newName}`, error);
+                }
+            }
+
+            // 修改：使用currentPath进行scriptName修复
+            if (dir === cTargetDir) {
+                try {
+                    const data = fs.readFileSync(currentPath, 'utf8');
+                    let jsonContent = JSON.parse(data);
+                    jsonContent = ensureScriptNamePrefix(jsonContent);
+                    fs.writeFileSync(currentPath, JSON.stringify(jsonContent, null, 2), 'utf8');
+                } catch (e) {
+                    console.error(`强制修复scriptName失败: ${file}`, e);
+                }
+            }
+        });
+    });
+}
+
+// 在脚本末尾调用双重修复
+removeDuplicatePrefixes();

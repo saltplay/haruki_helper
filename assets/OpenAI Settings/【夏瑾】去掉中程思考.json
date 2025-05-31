@@ -1,1 +1,0 @@
-{"id":"e3d7057d-4346-43a7-83d3-d510097d8d76","scriptName":"【夏瑾】去掉中程思考","findRegex":"/<中程分析>[\\s\\S]*?<\\/中程分析>/g","replaceString":"","trimStrings":[],"placement":[2],"disabled":false,"markdownOnly":true,"promptOnly":true,"runOnEdit":true,"substituteRegex":0,"minDepth":null,"maxDepth":null}

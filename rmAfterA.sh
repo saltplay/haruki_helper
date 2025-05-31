@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 定义要删除的目录（相对于脚本所在目录）
-dirs_to_clean=("a_assets" "assets/OpenAI Settings" "c_assets") # 将b_assets替换为assets/OpenAI Settings
+dirs_to_clean=("assets/OpenAI Settings" "c_assets") # 将b_assets替换为assets/OpenAI Settings
 
 # 获取脚本所在目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
