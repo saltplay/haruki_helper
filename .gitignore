@@ -1,6 +1,8 @@
 # 项目生成内容,特意规避
 runtime_config.json
 script/SillyTavernPath.txt
+a_assets/*
+c_assets/*
 
 # Logs
 logs

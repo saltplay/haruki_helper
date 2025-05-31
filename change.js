@@ -1,0 +1,253 @@
+const fs = require("fs");
+const path = require("path");
+
+// 使用 __dirname 获取当前脚本路径
+const scriptDir = __dirname;
+
+// 定义源目录和目标目录的绝对路径
+const sourceDir = path.join(scriptDir, "a_assets");
+// 修改目标目录为assets/OpenAI Settings
+const targetDir = path.join(scriptDir, "assets/OpenAI Settings");
+// 保持c_assets目录不变
+const cTargetDir = path.join(scriptDir, "c_assets");
+
+// 验证源目录是否存在
+if (!fs.existsSync(sourceDir)) {
+    console.error(`源目录不存在: ${sourceDir}`);
+    process.exit(1);
+}
+
+// 确保目标目录存在
+if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, { recursive: true });
+    console.log(`目标目录已创建: ${targetDir}`);
+} else {
+    console.log(`目标目录已存在: ${targetDir}`);
+}
+
+// 新增：确保 c_assets 目录存在
+if (!fs.existsSync(cTargetDir)) {
+    fs.mkdirSync(cTargetDir, { recursive: true });
+    console.log(`c_assets 目录已创建: ${cTargetDir}`);
+} else {
+    console.log(`c_assets 目录已存在: ${cTargetDir}`);
+}
+
+// 获取源目录中的所有文件
+const files = fs.readdirSync(sourceDir);
+console.log(`找到 ${files.length} 个文件`);
+
+// 定义文件名转换规则
+function transformFileName(name) {
+    // 去除扩展名
+    const baseName = path.basename(name, ".json");
+
+    // 替换空格和特殊字符
+    let newName = baseName
+        .replace(/\s+/g, "")
+        .replace(/-Beta\s+(\d+)/, "-Beta$1")
+        .replace(/V(\d+\.\d+)/, "V$1")
+        .replace(/\$\d+$/, "") // 删除结尾的 [数字]
+        .replace(/\$\d+$/, "") // 新增：删除结尾的 (数字)
+        .replace(/\(\d+\)/g, ""); // 新增：删除所有位置的 (数字)
+
+    // 添加前缀并重新添加扩展名
+    newName = `【夏瑾】${newName}.json`;
+
+    // 修复：删除多余的“夏瑾”字符串
+    newName = newName.replace(/【夏瑾】夏瑾/g, "【夏瑾】");
+
+    // 新增：修复重复的“【夏瑾】【夏瑾】”
+    newName = newName.replace(/【夏瑾】{2,}/g, "【夏瑾】");
+
+    return newName;
+}
+
+// 新增函数：确保 scriptName 以 【夏瑾】 开头
+function ensureScriptNamePrefix(jsonContent) {
+    if (jsonContent.scriptName && !jsonContent.scriptName.startsWith("【夏瑾】")) {
+        jsonContent.scriptName = "【夏瑾】" + jsonContent.scriptName;
+    }
+    return jsonContent;
+}
+
+// 判断是否是脚本规则类文件
+function isScriptRuleFile(jsonContent) {
+    return jsonContent.scriptName && jsonContent.findRegex && jsonContent.replaceString !== undefined && jsonContent.id;
+}
+
+// 遍历文件并进行处理
+files.forEach((file) => {
+    if (path.extname(file).toLowerCase() === ".json") {
+        const oldPath = path.join(sourceDir, file);
+        const newName = transformFileName(file);
+        const newPath = path.join(targetDir, newName);
+
+        // 检查新旧文件名是否相同
+        if (oldPath === newPath) {
+            console.log(`文件名未改变: ${file}`);
+            return;
+        }
+
+        try {
+            // 复制文件（原逻辑为移动）
+            fs.copyFileSync(oldPath, newPath);
+            console.log(`已复制: ${file} -> ${newName}`);
+
+            // 新增：读取 JSON 内容以判断是否是脚本规则类文件
+            const data = fs.readFileSync(newPath, 'utf8');
+            let jsonContent;
+            try {
+                jsonContent = JSON.parse(data);
+            } catch (e) {
+                console.error(`解析JSON失败: ${newPath}`, e);
+                return;
+            }
+
+            // 判断是否是脚本规则类文件（根据 scriptName、findRegex 和 replaceString 字段）
+            if (isScriptRuleFile(jsonContent)) {
+                const cNewPath = path.join(cTargetDir, newName);
+                fs.copyFileSync(newPath, cNewPath);
+                console.log(`已复制到 c_assets: ${newName}`);
+            }
+
+        } catch (error) {
+            console.error(`复制文件失败: ${file} -> ${newName}`, error);
+        }
+    }
+});
+
+console.log("文件名调整完成！");
+
+// 新增业务逻辑：修复目标目录中的文件名
+const targetFiles = fs.readdirSync(targetDir);
+console.log(`开始修复目标目录中的 ${targetFiles.length} 个文件名`);
+
+targetFiles.forEach((file) => {
+    const oldPath = path.join(targetDir, file);
+
+    // 修正文件名，删除多余的“夏瑾”以及重复的“【夏瑾】【夏瑾】”
+    let newName = file.replace(/【夏瑾】夏瑾/g, "【夏瑾】");
+    newName = newName.replace(/【夏瑾】【夏瑾】/g, "【夏瑾】"); // 新增逻辑
+
+    const newPath = path.join(targetDir, newName);
+
+    // 如果文件名未改变，则跳过
+    if (oldPath === newPath) {
+        console.log(`文件名无需修复: ${file}`);
+        return;
+    }
+
+    try {
+        // 重命名文件以修复文件名
+        fs.renameSync(oldPath, newPath);
+        console.log(`已修复文件名: ${file} -> ${newName}`);
+    } catch (error) {
+        console.error(`修复文件名失败: ${file} -> ${newName}`, error);
+    }
+});
+
+console.log("目标目录文件名修复完成！");
+
+// 新增函数：修复指定目录中的文件名
+function fixDirectoryFilenames(dirPath, dirName) {
+    const files = fs.readdirSync(dirPath);
+    console.log(`开始修复 ${dirName} 中的 ${files.length} 个文件名`);
+
+    files.forEach((file) => {
+        const oldPath = path.join(dirPath, file);
+
+        // 修正文件名，删除多余的“夏瑾”以及重复的“【夏瑾】【夏瑾】”
+        let newName = file.replace(/【夏瑾】夏瑾/g, "【夏瑾】");
+        newName = newName.replace(/【夏瑾】【夏瑾】/g, "【夏瑾】"); // 新增逻辑
+
+        const newPath = path.join(dirPath, newName);
+
+        // 如果文件名未改变，则跳过
+        if (oldPath === newPath) {
+            console.log(`文件名无需修复: ${file}`);
+            return;
+        }
+
+        try {
+            // 重命名文件以修复文件名
+            fs.renameSync(oldPath, newPath);
+            console.log(`${dirName} 文件名已修复: ${file} -> ${newName}`);
+        } catch (error) {
+            console.error(`${dirName} 修复文件名失败: ${file} -> ${newName}`, error);
+        }
+    });
+}
+
+// 修复 assets/OpenAI Settings 中的文件名
+fixDirectoryFilenames(targetDir, path.basename(targetDir));
+
+// 修复 c_assets 中的文件名
+if (fs.existsSync(cTargetDir)) {
+    fixDirectoryFilenames(cTargetDir, path.basename(cTargetDir));
+}
+
+// 新增函数：修复 c_assets 中所有 JSON 文件的 scriptName
+function fixCAssetsScriptNames() {
+    const cFiles = fs.readdirSync(cTargetDir);
+    console.log(`开始修复 c_assets 中的 ${cFiles.length} 个 JSON 文件的 scriptName`);
+
+    cFiles.forEach((file) => {
+        const filePath = path.join(cTargetDir, file);
+        if (path.extname(file).toLowerCase() !== ".json") return;
+
+        // 读取 JSON 内容
+        const data = fs.readFileSync(filePath, 'utf8');
+        let jsonContent;
+        try {
+            jsonContent = JSON.parse(data);
+        } catch (e) {
+            console.error(`解析JSON失败: ${filePath}`, e);
+            return;
+        }
+
+        // 确保 scriptName 以 【夏瑾】 开头
+        jsonContent = ensureScriptNamePrefix(jsonContent);
+
+        // 写回文件
+        fs.writeFileSync(filePath, JSON.stringify(jsonContent, null, 2), 'utf8');
+        console.log(`已修复 scriptName: ${file}`);
+    });
+}
+
+// 在脚本最后新增：将 b_assets 中的脚本规则类文件移动到 c_assets
+function moveScriptRulesFromBToC() {
+    const bFiles = fs.readdirSync(targetDir);
+    console.log(`开始检查 ${path.basename(targetDir)} 中的 ${bFiles.length} 个文件是否为脚本规则类文件`);
+
+    bFiles.forEach((file) => {
+        const oldPath = path.join(targetDir, file);
+        if (path.extname(file).toLowerCase() !== ".json") return;
+
+        // 读取 JSON 内容
+        const data = fs.readFileSync(oldPath, 'utf8');
+        let jsonContent;
+        try {
+            jsonContent = JSON.parse(data);
+        } catch (e) {
+            console.error(`解析JSON失败: ${oldPath}`, e);
+            return;
+        }
+
+        // 判断是否是脚本规则类文件
+        if (isScriptRuleFile(jsonContent)) {
+            const newPath = path.join(cTargetDir, file);
+            fs.renameSync(oldPath, newPath);
+            console.log(`已从 ${path.basename(targetDir)} 移动到 c_assets: ${file}`);
+        }
+    });
+
+    // 执行移动操作
+    moveScriptRulesFromBToC();
+
+    // 修复 c_assets 中所有 JSON 文件的 scriptName
+    fixCAssetsScriptNames();
+
+    // 在脚本的最后增加 module.exports = 1，表示成功执行
+    module.exports = 1;
+}
