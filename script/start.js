@@ -25,7 +25,7 @@ for (const scriptPath of scripts) {
 }
 
 if (allPassed) {
-  console.log("所有脚本执行成功，继续执行...");
+  console.log("所有脚本执行成功!");
   // 这里可以添加后续的逻辑
 } else {
   console.log("由于脚本失败，执行停止。");

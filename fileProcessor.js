@@ -1,21 +1,32 @@
 const fs = require("fs");
 const path = require("path");
 
-
-// PREFIX 可以修改，例如这样 '【夏瑾】';
-const PREFIX = '【kimini】';
-
-const ESCAPED_PREFIX = PREFIX.replace(/[\$\(\)\[\]\{\}]/g, '\\$&'); 
-
 // 使用 __dirname 获取当前脚本路径
 const scriptDir = __dirname;
 
-// 定义源目录和目标目录的绝对路径
-const sourceDir = path.join(scriptDir, "a_assets");
-// 修改目标目录为assets/OpenAI Settings
-const targetDir = path.join(scriptDir, "assets/OpenAI Settings");
-// 保持c_assets目录不变
-const cTargetDir = path.join(scriptDir, "c_assets");
+// 引入配置文件
+const config = require("./config.json");
+
+// 从配置文件获取前缀
+let PREFIX = config.prefix;
+// 增强逻辑：检查并自动补充中文括号
+if (PREFIX && typeof PREFIX === 'string' && !/^【.*】$/.test(PREFIX)) {
+    PREFIX = `【${PREFIX}】`;
+    // 将更新后的prefix写回配置文件
+    config.prefix = PREFIX;
+    fs.writeFileSync(
+        path.join(scriptDir, 'config.json'),
+        JSON.stringify(config, null, 2),
+        'utf8'
+    );
+}
+const ESCAPED_PREFIX = PREFIX.replace(/[$()\[\]\{\}]/g, '\\$&');
+
+// 使用配置文件定义目录
+// 从独立键获取路径并处理带空格的键名
+const sourceDir = path.join(scriptDir, config.input_for_fileProcessor);
+const targetDir = path.join(scriptDir, config['OpenAI Settings']);
+const cTargetDir = path.join(scriptDir, config.regex);
 
 // 验证源目录是否存在
 if (!fs.existsSync(sourceDir)) {
@@ -31,12 +42,12 @@ if (!fs.existsSync(targetDir)) {
     console.log(`目标目录已存在: ${targetDir}`);
 }
 
-// 新增：确保 c_assets 目录存在
+// 新增：确保 【正则】文件夹regex文件夹cassets 目录存在
 if (!fs.existsSync(cTargetDir)) {
     fs.mkdirSync(cTargetDir, { recursive: true });
-    console.log(`c_assets 目录已创建: ${cTargetDir}`);
+    console.log(`【正则】文件夹regex 目录已创建: ${cTargetDir}`);
 } else {
-    console.log(`c_assets 目录已存在: ${cTargetDir}`);
+    console.log(`【正则】文件夹regex 目录已存在: ${cTargetDir}`);
 }
 
 // 获取源目录中的所有文件
@@ -115,7 +126,7 @@ files.forEach((file) => {
                 const cNewPath = path.join(cTargetDir, newName);
                 // 修改：将复制改为移动操作
                 fs.renameSync(newPath, cNewPath);
-                console.log(`已移动到 c_assets: ${newName}`);
+                console.log(`已移动到 【正则】文件夹regex: ${newName}`);
             }
 
         } catch (error) {
@@ -186,18 +197,18 @@ function fixDirectoryFilenames(dirPath, dirName) {
     });
 }
 
-// 修复 assets/OpenAI Settings 中的文件名
+// 修复 【预设】文件夹assets/OpenAI Settings 中的文件名
 fixDirectoryFilenames(targetDir, path.basename(targetDir));
 
-// 修复 c_assets 中的文件名
+// 修复 【正则】文件夹regex 中的文件名
 if (fs.existsSync(cTargetDir)) {
     fixDirectoryFilenames(cTargetDir, path.basename(cTargetDir));
 }
 
-// 新增函数：修复 c_assets 中所有 JSON 文件的 scriptName
+// 新增函数：修复 【正则】文件夹regex 中所有 JSON 文件的 scriptName
 function fixCAssetsScriptNames() {
     const cFiles = fs.readdirSync(cTargetDir);
-    console.log(`开始修复 c_assets 中的 ${cFiles.length} 个 JSON 文件的 scriptName`);
+    console.log(`开始修复 【正则】文件夹regex 中的 ${cFiles.length} 个 JSON 文件的 scriptName`);
 
     cFiles.forEach((file) => {
         const filePath = path.join(cTargetDir, file);
@@ -222,7 +233,7 @@ function fixCAssetsScriptNames() {
     });
 }
 
-// 在脚本最后新增：将 b_assets 中的脚本规则类文件移动到 c_assets
+// 在脚本最后新增：将 【预设】文件夹assets/OpenAI Settings 中的脚本规则类文件移动到 【正则】文件夹regex
 function moveScriptRulesFromBToC() {
     const bFiles = fs.readdirSync(targetDir);
     console.log(`开始检查 ${path.basename(targetDir)} 中的 ${bFiles.length} 个文件是否为脚本规则类文件`);
@@ -245,7 +256,7 @@ function moveScriptRulesFromBToC() {
         if (isScriptRuleFile(jsonContent)) {
             const newPath = path.join(cTargetDir, file);
             fs.renameSync(oldPath, newPath);
-            console.log(`已从 ${path.basename(targetDir)} 移动到 c_assets: ${file}`);
+            console.log(`已从 ${path.basename(targetDir)} 移动到 【正则】文件夹regex: ${file}`);
             // 新增：立即触发文件名修复
             fixDirectoryFilenames(cTargetDir, path.basename(cTargetDir));
 
@@ -255,7 +266,7 @@ function moveScriptRulesFromBToC() {
     // 执行移动操作
     moveScriptRulesFromBToC();
 
-    // 修复 c_assets 中所有 JSON 文件的 scriptName
+    // 修复 【正则】文件夹regex 中所有 JSON 文件的 scriptName
     fixCAssetsScriptNames();
 
     // 在脚本的最后增加 module.exports = 1，表示成功执行
@@ -305,3 +316,6 @@ function removeDuplicatePrefixes() {
 
 // 在脚本末尾调用双重修复
 removeDuplicatePrefixes();
+
+// 符合核心js:"script/star.js"对于返回参数的格式要求
+module.exports = 1

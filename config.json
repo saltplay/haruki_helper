@@ -1,1 +1,1 @@
-{"scripts":["script/systemCheck.js","change.js","json_compression.js","script/LinuxRun.js","script/pathCheck.js","script/updateAssetsPaths.js","script/copyFiles.js"]}
+{"prefix":"【kemini】","input_for_fileProcessor":"input_for_fileProcessor","OpenAI Settings":"assets/OpenAI Settings","regex":"regex","scripts":["script/systemCheck.js","fileProcessor.js","json_compression.js","script/LinuxRun.js","script/pathCheck.js","script/updateAssetsPaths.js","script/copyFiles.js","regexExtractor.js"]}
