@@ -52,6 +52,7 @@ function updateConfig(fileContent) {
         const pathUpdates = {
             settings: path.join(fileContent, "data/default-user/settings.json"),
             "default-user": path.join(fileContent, "data/default-user"),
+            "backups": path.join(fileContent, "data/default-user/backups")
         };
 
         // 遍历并更新路径配置

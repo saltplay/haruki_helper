@@ -60,7 +60,9 @@ haruki_helper 是一个专为 SillyTavern
 - copyFiles.js: 跨平台文件批量复制引擎
 - jsonIdMerger.js: JSON数据ID智能合并工具
 - systemCheck.js: 系统环境检测与兼容性报告
-- fileProcessor.js: 文件分类处理器，实现预设/正则文件智能分发与命名规范化
+- ensureDirs.js: 基础目录结构维护工具，确保必要目录存在并符合规范
+- canonicalFolderName.js: 二级目录名称规范化工具，自动补全【】符号前缀
+- processScriptRuleFiles.js: 核心文件处理器，实现预设/正则文件智能分发、命名规范化、scriptName字段修复及重复前缀处理
 - json_compression.js: JSON文件压缩优化工具
 
 ## 开发计划
