@@ -2,38 +2,55 @@ const fs = require("fs");
 const path = require("path");
 
 // 使用 __dirname 获取当前脚本路径
-const scriptDir = __dirname;
-
 // 引入配置文件
 const config = require("../config.json");
-
-// 从配置文件获取前缀
-let PREFIX = config.prefix;
-// 增强逻辑：检查并自动补充中文括号
-if (PREFIX && typeof PREFIX === 'string' && !/^【.*】$/.test(PREFIX)) {
-    PREFIX = `【${PREFIX}】`;
-    // 将更新后的prefix写回配置文件
-    config.prefix = PREFIX;
-    fs.writeFileSync(
-        path.join(scriptDir, 'config.json'),
-        JSON.stringify(config, null, 2),
-        'utf8'
-    );
-}
-const ESCAPED_PREFIX = PREFIX.replace(/[$()\[\]{}]/g, '\\$&');
 
 // 明确定义项目根目录
 const projectRoot = path.join(__dirname, '..'); // 从 script 目录上溯到项目根目录
 
+// 添加 PREFIX 和 ESCAPED_PREFIX 定义
+const PREFIX = "【夏瑾】";
+const ESCAPED_PREFIX = PREFIX.replace(/[.*+?^${}()|[\\]/g, '\\\\$&'); // 转义特殊字符用于正则表达式
+
 // 使用项目根目录定义路径
 const sourceDir = path.join(projectRoot, config.input_for_fileProcessor);
 const targetDir = path.join(projectRoot, config['OpenAI Settings']);
-const cTargetDir = path.join(projectRoot, config.regex);
+const cTargetDir = path.join(projectRoot, config.regex); // 使用点符号访问属性
 
-// 验证源目录是否存在
+// 新增通用文件处理函数
+function processFile(oldPath, newPath, cTargetDir) {
+    try {
+        fs.copyFileSync(oldPath, newPath);
+        console.log(`已复制: ${path.basename(oldPath)} -> ${path.basename(newPath)}`);
+
+        const data = fs.readFileSync(newPath, 'utf8');
+        let jsonContent;
+        try {
+            jsonContent = JSON.parse(data);
+        } catch (e) {
+            console.error(`解析JSON失败: ${newPath}`, e);
+            return;
+        }
+
+        if (isScriptRuleFile(jsonContent)) {
+            const cNewPath = path.join(cTargetDir, path.basename(newPath));
+            try {
+                fs.renameSync(newPath, cNewPath);
+                console.log(`已移动到 【正则】文件夹regex: ${path.basename(newPath)}`);
+            } catch (renameError) {
+                console.error(`移动文件失败: ${path.basename(newPath)}`, renameError);
+            }
+        }
+
+    } catch (error) {
+        console.error(`复制文件失败: ${path.basename(oldPath)} -> ${path.basename(newPath)}`, error);
+    }
+}
+
+// 确保源目录存在
 if (!fs.existsSync(sourceDir)) {
-    console.error(`源目录不存在: ${sourceDir}`);
-    process.exit(1);
+    fs.mkdirSync(sourceDir, {recursive: true});
+    console.log(`源目录已创建: ${sourceDir}`);
 }
 
 // 确保目标目录存在
@@ -44,7 +61,7 @@ if (!fs.existsSync(targetDir)) {
     console.log(`目标目录已存在: ${targetDir}`);
 }
 
-// 新增：确保 【正则】文件夹regex文件夹cassets 目录存在
+// 新增：确保 【正则】文件夹regex文件夹regex目录存在
 if (!fs.existsSync(cTargetDir)) {
     fs.mkdirSync(cTargetDir, {recursive: true});
     console.log(`【正则】文件夹regex 目录已创建: ${cTargetDir}`);
@@ -52,16 +69,21 @@ if (!fs.existsSync(cTargetDir)) {
     console.log(`【正则】文件夹regex 目录已存在: ${cTargetDir}`);
 }
 
-// 获取源目录中的所有文件
-const files = fs.readdirSync(sourceDir);
-console.log(`找到 ${files.length} 个文件`);
+// 自动补全中文括号函数
+// 新增辅助函数
+function ensureBrackets(dirName) {
+    if (!/^【.*】$/.test(dirName)) {
+        return `【${dirName}】`;
+    }
+    return dirName;
+}
 
-// 定义文件名转换规则
-function transformFileName(name) {
+// 将文件名转换函数改为接收prefix参数
+function transformFileName(name, prefix) {
     // 去除扩展名
     const baseName = path.basename(name, ".json");
 
-    // 替换空格和特殊字符
+    // 去除空格和特殊字符
     let newName = baseName
         .replace(/\s+/g, "")
         .replace(/-Beta\s+(\d+)/, "-Beta$1")
@@ -70,17 +92,49 @@ function transformFileName(name) {
         .replace(/\$\d+$/, "") // 新增：删除结尾的 (数字)
         .replace(/\(\d+\)/g, ""); // 新增：删除所有位置的 (数字)
 
-    // 添加前缀并重新添加扩展名
-    newName = `${PREFIX}${newName}.json`;
-
-    // 修复：删除多余的“夏瑾”字符串（使用转义前缀）
-    newName = newName.replace(new RegExp(`${ESCAPED_PREFIX}夏瑾`, 'g'), PREFIX);
-
-    // 新增：修复重复的“【夏瑾】【夏瑾】”（使用转义前缀）
-    newName = newName.replace(new RegExp(`${ESCAPED_PREFIX}{2,}`, 'g'), PREFIX);
-
-    return newName;
+    // 添加目录名作为前缀并重新添加扩展名
+    return `${prefix}${newName}.json`;
 }
+
+// 新增：遍历二级目录处理
+const subDirs = fs.readdirSync(sourceDir, {withFileTypes: true})
+    .filter(dirent => dirent.isDirectory());
+
+subDirs.forEach(dirent => {
+    const originalSubDirName = dirent.name;
+    const subDirPath = path.join(sourceDir, originalSubDirName);
+
+    // 自动补全中文括号
+    const bracketedSubDirName = ensureBrackets(originalSubDirName);
+    const bracketedSubDirPath = path.join(sourceDir, bracketedSubDirName);
+
+    if (originalSubDirName !== bracketedSubDirName) {
+        fs.renameSync(subDirPath, bracketedSubDirPath);
+        console.log(`子目录名称已修正: ${originalSubDirName} -> ${bracketedSubDirName}`);
+    }
+
+    const currentSubDirPath = bracketedSubDirPath;
+    const prefix = bracketedSubDirName; // 用目录名作为前缀
+
+    // 获取该目录下的所有文件
+    const files = fs.readdirSync(currentSubDirPath).filter(file =>
+        path.extname(file).toLowerCase() === ".json"
+    );
+
+    // 文件名转换规则（已提前定义）
+    /* 已移除重复定义的transformFileName函数 */
+
+    // 处理文件逻辑
+    files.forEach(file => {
+        const oldPath = path.join(currentSubDirPath, file);
+        const newName = transformFileName(file, prefix);
+        const newPath = path.join(targetDir, newName);
+
+        // 替换二级目录文件处理逻辑
+        processFile(oldPath, newPath, cTargetDir);
+
+    });
+});
 
 // 新增函数：确保 scriptName 以 【夏瑾】 开头
 function ensureScriptNamePrefix(jsonContent) {
@@ -92,49 +146,34 @@ function ensureScriptNamePrefix(jsonContent) {
 
 // 判断是否是脚本规则类文件
 function isScriptRuleFile(jsonContent) {
-    return jsonContent.scriptName && jsonContent.findRegex && jsonContent.replaceString !== undefined && jsonContent.id;
+    return (
+        jsonContent.scriptName &&
+        jsonContent.hasOwnProperty('findRegex') &&
+        jsonContent.hasOwnProperty('replaceString') &&
+        jsonContent.id !== undefined
+    );
 }
 
+
 // 遍历文件并进行处理
-files.forEach((file) => {
-    if (path.extname(file).toLowerCase() === ".json") {
-        const oldPath = path.join(sourceDir, file);
-        const newName = transformFileName(file);
-        const newPath = path.join(targetDir, newName);
+const rootFiles = fs.readdirSync(sourceDir).filter(file =>
+    path.extname(file).toLowerCase() === ".json"
+);
 
-        // 检查新旧文件名是否相同
-        if (oldPath === newPath) {
-            console.log(`文件名未改变: ${file}`);
-            return;
-        }
+rootFiles.forEach((file) => {
+    const oldPath = path.join(sourceDir, file);
+    const newName = transformFileName(file, "");
+    const newPath = path.join(targetDir, newName);
 
-        try {
-            // 复制文件（原逻辑为移动）
-            fs.copyFileSync(oldPath, newPath);
-            console.log(`已复制: ${file} -> ${newName}`);
-
-            // 新增：读取 JSON 内容以判断是否是脚本规则类文件
-            const data = fs.readFileSync(newPath, 'utf8');
-            let jsonContent;
-            try {
-                jsonContent = JSON.parse(data);
-            } catch (e) {
-                console.error(`解析JSON失败: ${newPath}`, e);
-                return;
-            }
-
-            // 判断是否是脚本规则类文件（根据 scriptName、findRegex 和 replaceString 字段）
-            if (isScriptRuleFile(jsonContent)) {
-                const cNewPath = path.join(cTargetDir, newName);
-                // 修改：将复制改为移动操作
-                fs.renameSync(newPath, cNewPath);
-                console.log(`已移动到 【正则】文件夹regex: ${newName}`);
-            }
-
-        } catch (error) {
-            console.error(`复制文件失败: ${file} -> ${newName}`, error);
-        }
+    // 检查新旧文件名是否相同
+    if (oldPath === newPath) {
+        console.log(`文件名未改变: ${file}`);
+        return;
     }
+
+    // 替换根目录文件处理逻辑
+    processFile(oldPath, newPath, cTargetDir);
+
 });
 
 console.log("文件名调整完成！");
@@ -177,7 +216,7 @@ function fixDirectoryFilenames(dirPath, dirName) {
     files.forEach((file) => {
         const oldPath = path.join(dirPath, file);
 
-        // 修正文件名，删除多余的“夏瑾”以及重复的“【夏瑾】【夏瑾】”
+        // 修正文件名，删除多余的“夏瑾”以及重复的“【夏瑾】【夏瑾】
         let newName = file.replace(new RegExp(`(${ESCAPED_PREFIX})+夏瑾`, 'g'), PREFIX);
         newName = newName.replace(new RegExp(`(${ESCAPED_PREFIX}){2,}`, 'g'), PREFIX);
 
