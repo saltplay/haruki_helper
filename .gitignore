@@ -152,3 +152,4 @@ dist
 /.idea/inspectionProfiles/Project_Default.xml
 /.idea/stylesheetLinters/stylelint.xml
 /.idea/vcs.xml
+package-lock.json
