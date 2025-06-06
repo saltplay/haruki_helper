@@ -5,7 +5,7 @@ const path = require("path");
 const scriptDir = __dirname;
 
 // 引入配置文件
-const config = require("./config.json");
+const config = require("../config.json");
 
 // 从配置文件获取前缀
 let PREFIX = config.prefix;
@@ -22,11 +22,13 @@ if (PREFIX && typeof PREFIX === 'string' && !/^【.*】$/.test(PREFIX)) {
 }
 const ESCAPED_PREFIX = PREFIX.replace(/[$()\[\]\{\}]/g, '\\$&');
 
-// 使用配置文件定义目录
-// 从独立键获取路径并处理带空格的键名
-const sourceDir = path.join(scriptDir, config.input_for_fileProcessor);
-const targetDir = path.join(scriptDir, config['OpenAI Settings']);
-const cTargetDir = path.join(scriptDir, config.regex);
+// 明确定义项目根目录
+const projectRoot = path.join(__dirname, '..'); // 从 script 目录上溯到项目根目录
+
+// 使用项目根目录定义路径
+const sourceDir = path.join(projectRoot, config.input_for_fileProcessor);
+const targetDir = path.join(projectRoot, config['OpenAI Settings']);
+const cTargetDir = path.join(projectRoot, config.regex);
 
 // 验证源目录是否存在
 if (!fs.existsSync(sourceDir)) {
@@ -36,7 +38,7 @@ if (!fs.existsSync(sourceDir)) {
 
 // 确保目标目录存在
 if (!fs.existsSync(targetDir)) {
-    fs.mkdirSync(targetDir, { recursive: true });
+    fs.mkdirSync(targetDir, {recursive: true});
     console.log(`目标目录已创建: ${targetDir}`);
 } else {
     console.log(`目标目录已存在: ${targetDir}`);
@@ -44,7 +46,7 @@ if (!fs.existsSync(targetDir)) {
 
 // 新增：确保 【正则】文件夹regex文件夹cassets 目录存在
 if (!fs.existsSync(cTargetDir)) {
-    fs.mkdirSync(cTargetDir, { recursive: true });
+    fs.mkdirSync(cTargetDir, {recursive: true});
     console.log(`【正则】文件夹regex 目录已创建: ${cTargetDir}`);
 } else {
     console.log(`【正则】文件夹regex 目录已存在: ${cTargetDir}`);

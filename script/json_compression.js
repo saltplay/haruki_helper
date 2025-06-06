@@ -46,15 +46,14 @@ function processDirectory(dirPath) {
 
     // 修改后的递归遍历函数
     function walk(currentDir) {
-        const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+        const entries = fs.readdirSync(currentDir, {withFileTypes: true});
         for (const entry of entries) {
             const fullPath = path.join(currentDir, entry.name);
             if (entry.isDirectory()) {
                 walk(fullPath); // 递归处理子目录
             } else if (
                 fullPath.toLowerCase().endsWith(".json") &&
-                !fullPath.includes("node_modules") && // 过滤依赖目录
-                path.basename(fullPath) !== "package.json" // 过滤项目配置文件
+                !fullPath.includes("node_modules") // 过滤依赖目录
             ) {
                 try {
                     const result = processSingleFile(fullPath);
@@ -77,11 +76,11 @@ function processDirectory(dirPath) {
 
 // 保持原有调用方式
 if (require.main === module) {
-    const inputPath = process.cwd();
+    const inputPath = path.resolve(__dirname, "../"); // 改为项目根目录
     const result = compressJson(inputPath);
     module.exports = result;
 } else {
-    const inputPath = process.cwd();
+    const inputPath = path.resolve(__dirname, "../"); // 改为项目根目录
     const result = compressJson(inputPath);
     module.exports = result;
 }

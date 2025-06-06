@@ -1,15 +1,14 @@
-// 修改 regexExtractor.js 内容如下：
-
-const fs = require('fs');
+const fs = require("fs");
 const path = require('path');
 
 // 读取config.json获取regex路径
-const configPath = path.join(__dirname, 'config.json');
+const projectRoot = path.join(__dirname, '..'); // 确保 projectRoot 指向项目根目录
+const configPath = path.join(projectRoot, 'config.json');
 const rawConfig = fs.readFileSync(configPath, 'utf-8');
 const config = JSON.parse(rawConfig);
 
 // 修正路径拼接方式
-const regexDir = path.join(path.dirname(configPath), config.regex);
+const regexDir = path.join(projectRoot, config.regex);
 
 // 读取目录内容
 const files = fs.readdirSync(regexDir);
@@ -24,17 +23,18 @@ files.forEach(file => {
 
     // 检查id字段是否存在
     if (data.id) {
-        ids.push({ file, id: data.id });
+        ids.push({file, id: data.id});
     }
 });
 
 // 读取运行时配置
 let runtimeConfig;
 try {
-    const configContent = fs.readFileSync('runtime_config.json', 'utf-8');
+    const configContent = fs.readFileSync(path.join(projectRoot, 'runtime_config.json'), 'utf-8');
     // 移除JSON中的注释和非法逗号
     const sanitizedContent = configContent
-        .replace(/\/\*[\s\S]*?\*\/|([^:]\s*)\/\/.*$/gm, '$1')
+        .replace(/\/\*[^*]*\*+([^\/*][^*]*\*+)*\//g, '')
+        .replace(/([^:]\s*)\/\/.*$/gm, '$1')
         .replace(/,\s*(?=\})/g, '')
         .replace(/,\s*(?=\])/g, '');
 
@@ -53,7 +53,7 @@ try {
 } catch (error) {
     console.error(`settings.json解析失败: ${error.message}`);
     console.log('将使用默认结构继续执行');
-    settings = { extension_settings: { regex: [] } };
+    settings = {extension_settings: {regex: []}};
 }
 
 // 创建id到索引的映射
@@ -64,7 +64,7 @@ settings.extension_settings.regex.forEach((item, index) => {
 
 // 合并数据并记录冲突
 const conflicts = [];
-ids.forEach(({ file, id }) => {
+ids.forEach(({file, id}) => {
     const filePath = path.join(regexDir, file);
     const content = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 
@@ -94,7 +94,7 @@ fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
 
 // 打印结果
 console.log('提取到的ID列表：');
-ids.forEach(({ file, id }) => {
+ids.forEach(({file, id}) => {
     console.log(`${file}: ${id}`);
 });
 

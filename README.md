@@ -1,88 +1,78 @@
 # haruki_helper
 
-## 安装
+> **重要通知**：项目即将推出基于Git的预设/正则管理功能重大更新，当前教程未对现有功能做详细说明是正常现象，所有核心功能均能正常使用。请放心使用并关注后续更新日志。
 
-1. 确保你已经安装了 [SillyTavern](https://github.com/SillyTavern/SillyTavern)
-2. 本项目不区分系统，全平台通用
+## 项目简介
 
-     ```bash
-     git clone https://github.com/saltplay/haruki_helper.git && cd haruki_helper && npm start
-     ```
+haruki_helper 是一个专为 SillyTavern 设计的预设/正则文件批量处理工具，提供文件重命名、格式转换、目录整理等功能的一站式解决方案。
 
-3. 如果一次没有成功,请输入以下启动命令
+## 功能特性
 
-     ```bash
-     npm start
-     ```
+1. 批量处理预设/正则文件
+2. 文件重命名与格式转换
+3. 目录结构自动整理
+4. 支持正则表达式命名规范
+5. 自动补全【】符号前缀
 
-4. 一定不要反复输入安装指令!!!因为他会反复在更深的路径创建文件夹,而不会保留旧的配置.启动命令则是会保留配置项
+## 系统要求
 
-5. 安装完成之后,记得刷新酒馆,让酒馆加载部署好的【夏瑾】预设/破限
+- Node.js v18+
+- npm 或 yarn 包管理器
+- SillyTavern 运行环境
 
----
+## 安装指南
 
-## 更新
+1. 确保已安装 [SillyTavern](https://github.com/SillyTavern/SillyTavern)
+2. 全平台通用安装命令：
+   ```bash
+   git clone https://github.com/saltplay/haruki_helper.git && cd haruki_helper && npm install
+   ```
+3. 启动项目：
 
-1. 确保你已经安装了haruki_helper
-2. 输入以下命令
+   ```bash
+   npm start
+   ```
 
-     ```bash
-     git pull
-     ```
+## 使用说明
 
----
+1. 一键安装脚本会自动完成初始配置
+2. 后续启动方式：
+    - Windows: 双击 `start.bat`
+    - macOS/Linux: 运行 `./start.sh`
+3. 配置更新后请刷新 SillyTavern 加载新设置
 
-## 卸载
+## 目录结构
 
-1. 确保你已经安装了haruki_helper
-2. Windows/mac, 直接在 资源管理器/访达 卸载掉整个haruki_helper文件夹.
-3. Linux可以自行卸载haruki_helper文件夹,或者使用以下命令
+```
+├── assets              # 资源文件
+├── input_for_fileProcessor # 输入文件处理目录
+├── regex               # 正则规则文件
+├── script              # 核心脚本目录
+├── config.json         # 主配置文件
+└── README.md         # 本文件
+```
 
-     ```bash
-     cd .. && rm -rf haruki_helper
-     ```
+## 配置说明
 
-   或者你可以自行来到haruki_helper的父目录,运行以下命令
+通过 `config.json` 实现路径集中管理，支持以下配置项：
 
-     ```bash
-     rm -rf haruki_helper
-     ```
+- 文件存储路径
+- 正则规则前缀
+- 系统环境参数
 
----
+## 核心模块
 
-## 运行逻辑
-
-1. **配置驱动**：所有路径通过`config.json`集中管理
-2. **文件处理**：`fileProcessor.js`负责文件重命名、格式转换和目录整理
-3. **清理机制**：`rm*.sh`系列脚本实现目录内容清除
-4. **格式规范**：通过正则表达式统一文件命名规则
-5. **动态适配**：支持前缀配置自动更新（自动补全【】符号）
-
----
-
-## 项目思路
-
-采用模块化设计实现以下目标：
-
-- **可维护性**：配置与逻辑分离，修改路径只需改配置文件
-- **易用性**：提供一键式脚本操作，降低使用门槛
-- **灵活性**：通过脚本组合实现多种清理策略
-- **健壮性**：自动处理路径异常和配置错误
-- **可扩展性**：预留目录结构支持未来功能扩展
-
----
+- `fileProcessor.js`: 文件处理核心逻辑
+- `systemCheck.js`: 系统环境检测
+- `pathCheck.js`: 路径有效性验证
+- `json_compression.js`: JSON文件压缩工具
 
 ## 开发计划
 
 ### Web GUI开发
 
-我们计划开发一个现代化的Web界面来提升用户体验，主要特性包括：
-
-- 可视化配置编辑器（支持实时预览配置效果）
+- 可视化配置编辑器（实时预览）
 - 拖拽式文件处理界面
-- 实时日志监控面板
-- 主题切换功能（暗色/亮色模式）
-- 多语言支持框架
 
 ### 技术选型
 
@@ -90,40 +80,25 @@
 - 后端：Node.js Express
 - 跨平台：Electron.js打包
 
-### 参与方式
+## 更新维护
 
-欢迎有兴趣的开发者参与GUI开发：
+```bash
+git pull origin main  # 获取最新更新
+```
 
-1. 查看[issue#web-gui](https://github.com/saltplay/haruki_helper/issues/web-gui)获取当前任务
-2. 加入Discord频道讨论设计原型
-3. 提交PR时请遵循[贡献指南](CONTRIBUTING.md)
+## 卸载方法
 
----
+- Windows/macOS: 删除整个项目文件夹
+- Linux: 执行 `rm -rf haruki_helper`
 
-## 核心JS功能说明
+## 版权声明
 
-- `fileProcessor.js`：主处理逻辑，实现文件重命名、格式转换和目录整理
-- `json_compression.js`：JSON文件压缩工具
-- `script/systemCheck.js`：系统环境检测
-- `script/pathCheck.js`：路径有效性验证
-- `script/updateAssetsPaths.js`：资源路径同步更新
-- `script/copyFiles.js`：文件复制工具
-- `regexExtractor.js`：正则表达式提取器
+> [预设/正则作者 haruki 地址](https://discord.com/channels/1134557553011998840/1353870378128244791)
 
----
+> [预设/正则作者 kitsch 地址](https://discord.com/channels/1134557553011998840/1339853575295209482)
 
-## 鸣谢
+> [预设/正则作者 haruki 地址](https://discord.com/channels/1134557553011998840/1353870378128244791)
 
-  > [点此查看 haruki 大佬的发布地址](https://discord.com/channels/1134557553011998840/1353870378128244791)
+## 免责声明
 
-  对原作品的名称进行了修改(用来符合正则插件的规范),但是没有修改原作品的内容
-
----
-
-## 免责声明（叠甲）
-
-- 如果任何人因为这个项目，感受到冒犯/侵权，请立刻联系我，我得知后，会立刻删掉这个仓库(或者您有特别的需求，也可以要求我归档)。
-- 如果有其她技术问题，请在issue留言
-- 留言请规范格式
-- 但是我基本不会在线，所以没有受理也不要失望
-- 正则和破限规则的版权属于 haruki，k一串大佬 大佬
+本项目不包含任何侵权内容，若存在争议请及时联系删除。正则和破限规则版权属于原作者 haruki 和 k一串大佬。

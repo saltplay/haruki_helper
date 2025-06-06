@@ -142,6 +142,7 @@ dist
 .pnp.*
 
 .DS_Store
+/.idea
 /.idea/.gitignore
 /.idea/haruki_helper.iml
 /.idea/jsLibraryMappings.xml
