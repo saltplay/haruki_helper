@@ -208,33 +208,6 @@ if (fs.existsSync(cTargetDir)) {
 }
 
 // 新增函数：修复 【正则】文件夹regex 中所有 JSON 文件的 scriptName
-function fixCAssetsScriptNames() {
-    const cFiles = fs.readdirSync(cTargetDir);
-    console.log(`开始修复 【正则】文件夹regex 中的 ${cFiles.length} 个 JSON 文件的 scriptName`);
-
-    cFiles.forEach((file) => {
-        const filePath = path.join(cTargetDir, file);
-        if (path.extname(file).toLowerCase() !== ".json") return;
-
-        // 读取 JSON 内容
-        const data = fs.readFileSync(filePath, 'utf8');
-        let jsonContent;
-        try {
-            jsonContent = JSON.parse(data);
-        } catch (e) {
-            console.error(`解析JSON失败: ${filePath}`, e);
-            return;
-        }
-
-        // 确保 scriptName 以 【夏瑾】 开头
-        jsonContent = ensureScriptNamePrefix(jsonContent);
-
-        // 写回文件
-        fs.writeFileSync(filePath, JSON.stringify(jsonContent, null, 2), 'utf8');
-        console.log(`已修复 scriptName: ${file}`);
-    });
-}
-
 // 在脚本最后新增：将 【预设】文件夹assets/OpenAI Settings 中的脚本规则类文件移动到 【正则】文件夹regex
 // 在脚本末尾调用双重修复
 function removeDuplicatePrefixes() {
