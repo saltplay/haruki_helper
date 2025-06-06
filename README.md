@@ -83,10 +83,8 @@ haruki_helper 是一个专为 SillyTavern
 
 ```
 # 获取最新更新
-$ git pull origin main
+$ git reset --hard && git pull origin main
 
-# 推送本地更改
-$ git add . && git commit -m "update" && git push origin main
 ```
 
 ## 卸载方法
