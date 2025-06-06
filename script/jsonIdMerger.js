@@ -35,8 +35,8 @@ try {
     const sanitizedContent = configContent
         .replace(/\/\*[^*]*\*+([^\/*][^*]*\*+)*\//g, '')
         .replace(/([^:]\s*)\/\/.*$/gm, '$1')
-        .replace(/,\s*(?=\})/g, '')
-        .replace(/,\s*(?=\])/g, '');
+        .replace(/,\s*(?=})/g, '')
+        .replace(/,\s*(?=])/g, '');
 
     runtimeConfig = JSON.parse(sanitizedContent);
 } catch (error) {

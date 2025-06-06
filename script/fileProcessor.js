@@ -20,7 +20,7 @@ if (PREFIX && typeof PREFIX === 'string' && !/^【.*】$/.test(PREFIX)) {
         'utf8'
     );
 }
-const ESCAPED_PREFIX = PREFIX.replace(/[$()\[\]\{\}]/g, '\\$&');
+const ESCAPED_PREFIX = PREFIX.replace(/[$()\[\]{}]/g, '\\$&');
 
 // 明确定义项目根目录
 const projectRoot = path.join(__dirname, '..'); // 从 script 目录上溯到项目根目录
@@ -236,46 +236,6 @@ function fixCAssetsScriptNames() {
 }
 
 // 在脚本最后新增：将 【预设】文件夹assets/OpenAI Settings 中的脚本规则类文件移动到 【正则】文件夹regex
-function moveScriptRulesFromBToC() {
-    const bFiles = fs.readdirSync(targetDir);
-    console.log(`开始检查 ${path.basename(targetDir)} 中的 ${bFiles.length} 个文件是否为脚本规则类文件`);
-
-    bFiles.forEach((file) => {
-        const oldPath = path.join(targetDir, file);
-        if (path.extname(file).toLowerCase() !== ".json") return;
-
-        // 读取 JSON 内容
-        const data = fs.readFileSync(oldPath, 'utf8');
-        let jsonContent;
-        try {
-            jsonContent = JSON.parse(data);
-        } catch (e) {
-            console.error(`解析JSON失败: ${oldPath}`, e);
-            return;
-        }
-
-        // 判断是否是脚本规则类文件
-        if (isScriptRuleFile(jsonContent)) {
-            const newPath = path.join(cTargetDir, file);
-            fs.renameSync(oldPath, newPath);
-            console.log(`已从 ${path.basename(targetDir)} 移动到 【正则】文件夹regex: ${file}`);
-            // 新增：立即触发文件名修复
-            fixDirectoryFilenames(cTargetDir, path.basename(cTargetDir));
-
-        }
-    });
-
-    // 执行移动操作
-    moveScriptRulesFromBToC();
-
-    // 修复 【正则】文件夹regex 中所有 JSON 文件的 scriptName
-    fixCAssetsScriptNames();
-
-    // 在脚本的最后增加 module.exports = 1，表示成功执行
-    module.exports = 1;
-
-}
-
 // 在脚本末尾调用双重修复
 function removeDuplicatePrefixes() {
     const dirsToCheck = [targetDir, cTargetDir].filter(dir => fs.existsSync(dir));

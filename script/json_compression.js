@@ -77,10 +77,8 @@ function processDirectory(dirPath) {
 // 保持原有调用方式
 if (require.main === module) {
     const inputPath = path.resolve(__dirname, "../"); // 改为项目根目录
-    const result = compressJson(inputPath);
-    module.exports = result;
+    module.exports = compressJson(inputPath);
 } else {
     const inputPath = path.resolve(__dirname, "../"); // 改为项目根目录
-    const result = compressJson(inputPath);
-    module.exports = result;
+    module.exports = compressJson(inputPath);
 }
