@@ -7,7 +7,8 @@ script/SillyTavernPath.txt
 /assets/
 /input_for_fileProcessor/
 /regex/
-
+/.idea
+/.idea/*
 
 # Logs
 logs
@@ -146,15 +147,5 @@ dist
 .pnp.*
 
 .DS_Store
-/.idea
-/.idea/.gitignore
-/.idea/haruki_helper.iml
-/.idea/jsLibraryMappings.xml
-/.idea/misc.xml
-/.idea/modules.xml
-/.idea/prettier.xml
-/.idea/inspectionProfiles/Project_Default.xml
-/.idea/stylesheetLinters/stylelint.xml
-/.idea/vcs.xml
 package-lock.json
 

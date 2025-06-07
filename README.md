@@ -11,13 +11,15 @@ haruki_helper 是一个专为 SillyTavern
 
 ## 功能特性
 
-1. 基于Git的预设/正则版本管理
+1. 基于Git的预设/正则版本管理（支持第三方仓库集成）
 2. 支持远程仓库同步与回滚
 3. 批量处理预设/正则文件
 4. 文件重命名与格式转换
 5. 目录结构自动整理
 6. 支持正则表达式命名规范
 7. 自动补全【】符号前缀，符合标签化脚本要求的命名规范
+8. 动态仓库配置管理（通过runtime_config.json配置git_repositories）
+9. 多仓库并行同步与异常隔离处理
 
 ## 安装指南
 
@@ -29,7 +31,17 @@ haruki_helper 是一个专为 SillyTavern
 
 ## 使用说明
 
-1. 把需要处理的文件夹放进
+1. 修改预设/正则源：
+   - 编辑 runtime_config.json 中的 git_repositories 字段
+   - 示例格式：
+     ```json
+     {
+       "git_repositories": {
+         "【云瑾】": "https://github.com/saltplay/yunjin",
+         "【kemini】": "https://github.com/saltplay/kemini"
+       }
+     }
+     ```
 2. 启动项目的命令：
    ```bash
    npm start
@@ -64,6 +76,7 @@ haruki_helper 是一个专为 SillyTavern
 - canonicalFolderName.js: 二级目录名称规范化工具，自动补全【】符号前缀
 - processScriptRuleFiles.js: 核心文件处理器，实现预设/正则文件智能分发、命名规范化、scriptName字段修复及重复前缀处理
 - json_compression.js: JSON文件压缩优化工具
+- syncProjects.js: Git仓库同步管理器，支持动态仓库配置、多仓库并行同步、异常自动恢复
 
 ## 开发计划
 
