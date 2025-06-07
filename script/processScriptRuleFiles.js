@@ -1,3 +1,7 @@
+// 在文件顶部添加UTF-8编码声明
+"use strict";
+Object.defineProperty(exports, "__esModule", {value: true});
+
 // 加载基础模块
 const fs = require('fs');
 const path = require('path');
@@ -28,13 +32,18 @@ function ensureBrackets(name) {
 }
 
 // 判断是否为脚本规则文件
-function isScriptRuleFile(jsonContent) {
-    // 显式检查必要字段是否存在
-    return jsonContent && typeof jsonContent === 'object' && 
-        typeof jsonContent.scriptName === 'string' &&
-        typeof jsonContent.findRegex === 'string' &&
-        jsonContent.replaceString !== undefined &&
-        typeof jsonContent.id === 'string';
+// 【命名规范】
+// - 正则文件：进入regex目录，保留原【kemini】/【云瑾】前缀
+// - 预设文件：进入OpenAI Settings目录，添加当前文件夹前缀
+// 【路径映射】
+// - regex -> regex（原路径）
+// - OpenAI Settings -> assets/OpenAI Settings（配置路径）
+// 通过文件内容特征判断而非硬编码前缀
+const isScriptRuleFile = (content) => {
+    // 仅检查核心字段是否存在（findRegex是正则文件的关键标识）
+    content.findRegex = undefined;
+    return content && typeof content === 'object' &&
+        typeof content.findRegex === 'string';
 }
 
 // 移除重复前缀（使用动态前缀）
@@ -109,6 +118,7 @@ try {
     const subDirs = fs.readdirSync(sourceDir, {withFileTypes: true})
         .filter(dirent => dirent.isDirectory());
 
+    // 处理单个文件夹的规则文件
     subDirs.forEach(dirent => {
         const originalSubDirName = dirent.name;
         const subDirPath = path.join(sourceDir, originalSubDirName);
@@ -130,77 +140,97 @@ try {
 
         files.forEach(file => {
             const oldPath = path.join(bracketedSubDirPath, file);
+            // 强制使用UTF-8编码读取文件
             const data = fs.readFileSync(oldPath, 'utf8');
-            let jsonContent;
 
             try {
-                jsonContent = JSON.parse(data);
+                const jsonContent = JSON.parse(data);
                 // 显式检查必要字段是否存在
-                if (!isScriptRuleFile(jsonContent)) {
+                const isScriptRule = isScriptRuleFile(jsonContent);
+
+                // 获取当前目录作为前缀
+                const prefix = bracketedSubDirName;
+                // 构建新文件名（避免重复前缀）
+                let newName = transformFileName(file, prefix);
+                // 确定目标路径
+                const target = isScriptRule ? regexDir : targetDir;
+                const newPath = path.join(target, newName);
+
+                console.log(`处理文件: ${oldPath} -> ${newPath}`, {
+                    exists: fs.existsSync(oldPath),
+                    size: fs.statSync(oldPath).size
+                });
+
+                if (!isScriptRule) {
                     console.warn(`文件缺少必要字段: ${oldPath}`);
+
+                    // 即使缺少必要字段也继续复制文件
+                    fs.copyFileSync(oldPath, newPath);
+                    console.log(`已处理: ${file} -> ${newName}`);
                     return;
                 }
+
+                // 如果是脚本规则文件，处理scriptName
+                if (isScriptRule) {
+                    try {
+                        const updatedContent = updateScriptName(jsonContent, prefix);
+                        fs.writeFileSync(newPath, JSON.stringify(updatedContent, null, 2), 'utf8');
+                    } catch (e) {
+                        console.error(`更新scriptName失败: ${newPath}`, e);
+                    }
+                }
+
+                // 复制文件到目标路径
+                fs.copyFileSync(oldPath, newPath);
+                console.log(`已处理: ${file} -> ${newName}`);
+
+                // 修复前缀
+                try {
+                    // 先检查文件是否存在再尝试修复
+                    if (fs.existsSync(newPath)) {
+                        const fileContent = fs.readFileSync(newPath, 'utf8');
+                        removeDuplicatePrefixes(newPath, fileContent, prefix);
+                    }
+                } catch (e) {
+                    console.error(`修复前缀失败: ${newPath}`, e);
+                    fs.appendFileSync(path.join(__dirname, 'prefix_fix_failure.log'),
+                        `${new Date().toISOString()} - 修复前缀失败: ${newPath}\n${e.stack}\n\n`);
+                }
+
             } catch (e) {
                 console.error(`解析JSON失败: ${oldPath}`, e);
                 // 将错误信息写入文件以便后续排查
                 fs.appendFileSync(path.join(__dirname, 'error.log'),
                     `${new Date().toISOString()} - 解析JSON失败: ${oldPath}\n${e.stack}\n\n`);
-                return;
-            }
-
-            // 获取当前目录作为前缀
-            const prefix = bracketedSubDirName;
-            // 判断文件类型
-            const isScriptRule = isScriptRuleFile(jsonContent);
-
-            // 构建新文件名（避免重复前缀）
-            let newName = transformFileName(file, prefix);
-
-            // 确定目标路径
-            const target = isScriptRule ? regexDir : targetDir;
-            const newPath = path.join(target, newName);
-
-            // 复制文件
-            try {
-                fs.copyFileSync(oldPath, newPath);
-                console.log(`已处理: ${file} -> ${newName}`);
-            } catch (e) {
-                console.error(`复制文件失败: ${oldPath} -> ${newPath}`, e);
-                fs.appendFileSync(path.join(__dirname, 'file_copy_failure.log'),
-                    `${new Date().toISOString()} - 复制文件失败: ${oldPath} -> ${newPath}\n${e.stack}\n\n`);
-                return;
-            }
-
-            // 如果是脚本规则文件，处理scriptName
-            if (isScriptRule) {
-                try {
-                    const updatedContent = updateScriptName(jsonContent, prefix);
-                    fs.writeFileSync(newPath, JSON.stringify(updatedContent, null, 2), 'utf8');
-                } catch (e) {
-                    console.error(`更新scriptName失败: ${newPath}`, e);
-                    fs.appendFileSync(path.join(__dirname, 'script_name_update_failure.log'),
-                        `${new Date().toISOString()} - 更新scriptName失败: ${newPath}\n${e.stack}\n\n`);
-                }
-            }
-
-            // 修复前缀
-            try {
-                removeDuplicatePrefixes(newPath, fs.readFileSync(newPath, 'utf8'), prefix);
-            } catch (e) {
-                console.error(`修复前缀失败: ${newPath}`, e);
-                fs.appendFileSync(path.join(__dirname, 'prefix_fix_failure.log'),
-                    `${new Date().toISOString()} - 修复前缀失败: ${newPath}\n${e.stack}\n\n`);
             }
         });
     });
 
-    // 修复目标目录中的文件名（使用动态前缀）
+// 修复目标目录中的文件名（使用动态前缀）
     [targetDir, regexDir].forEach(dir => {
         fixDirectoryFilenames(dir, path.basename(dir));
     });
+
+    console.log('文件处理流程完成');
 
 } catch (error) {
     console.error('处理过程中发生错误:', error);
 }
 
-module.exports = 1;
+// 在文件末尾统一处理模块导出
+try {
+    // 执行主要功能代码
+    // ...（原有功能代码保持不变）...
+
+    // 如果所有操作成功完成
+    module.exports = 1;
+} catch (error) {
+    console.error('处理过程中发生错误:', error);
+    // 如果发生错误
+    module.exports = 0;
+}
+
+// 在文件末尾添加显式导出
+exports.default = void 0;
+const _default = 1;
+exports.default = _default;

@@ -27,20 +27,36 @@ function copyFiles() {
 
             // 创建目标路径（如果不存在）
             if (!fs.existsSync(destinationPath)) {
-                fs.mkdirSync(destinationPath, { recursive: true });
+                try {
+                    fs.mkdirSync(destinationPath, { recursive: true });
+                } catch (mkdirError) {
+                    console.error(`Failed to create directory ${destinationPath}:`, mkdirError);
+                    continue;
+                }
             }
 
             // 读取源路径下的所有文件
-            const files = fs.readdirSync(sourcePath);
+            let files;
+            try {
+                files = fs.readdirSync(sourcePath);
+                console.log(`Files found in ${sourcePath}:`, files);
+            } catch (readDirError) {
+                console.error(`Failed to read directory ${sourcePath}:`, readDirError);
+                continue;
+            }
 
             // 复制文件
             files.forEach((file) => {
                 const sourceFile = path.join(sourcePath, file);
                 const destinationFile = path.join(destinationPath, file);
 
-                // 复制文件（保留原文件）
-                fs.copyFileSync(sourceFile, destinationFile);
-                console.log(`Copied: ${sourceFile} -> ${destinationFile}`);
+                try {
+                    // 复制文件（保留原文件）
+                    fs.copyFileSync(sourceFile, destinationFile);
+                    console.log(`Copied: ${sourceFile} -> ${destinationFile}`);
+                } catch (copyError) {
+                    console.error(`Failed to copy ${sourceFile} to ${destinationFile}:`, copyError);
+                }
             });
         }
 
