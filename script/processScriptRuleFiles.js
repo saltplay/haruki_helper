@@ -41,7 +41,6 @@ function ensureBrackets(name) {
 // 通过文件内容特征判断而非硬编码前缀
 const isScriptRuleFile = (content) => {
     // 仅检查核心字段是否存在（findRegex是正则文件的关键标识）
-    content.findRegex = undefined;
     return content && typeof content === 'object' &&
         typeof content.findRegex === 'string';
 }
@@ -183,6 +182,25 @@ try {
                 // 复制文件到目标路径
                 fs.copyFileSync(oldPath, newPath);
                 console.log(`已处理: ${file} -> ${newName}`);
+
+                // 在复制文件之后，添加新的scriptName处理逻辑
+                if (isScriptRule) {
+                    try {
+                        // 再次读取新路径下的文件内容
+                        const fileContent = fs.readFileSync(newPath, 'utf8');
+                        const jsonContent = JSON.parse(fileContent);
+                        
+                        // 更新scriptName字段
+                        const updatedContent = updateScriptName(jsonContent, prefix);
+                        
+                        // 写回文件
+                        fs.writeFileSync(newPath, JSON.stringify(updatedContent, null, 2), 'utf8');
+                    } catch (e) {
+                        console.error(`更新scriptName失败: ${newPath}`, e);
+                        fs.appendFileSync(path.join(__dirname, 'scriptname_failure.log'),
+                            `${new Date().toISOString()} - 更新scriptName失败: ${newPath}\n${e.stack}\n\n`);
+                    }
+                }
 
                 // 修复前缀
                 try {
