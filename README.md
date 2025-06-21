@@ -31,6 +31,8 @@ haruki_helper 是一个专为 SillyTavern
 
 ## 使用说明
 
+### 直接使用
+
 1. 修改预设/正则源：
    - 编辑 runtime_config.json 中的 git_repositories 字段
    - 示例格式：
@@ -50,6 +52,16 @@ haruki_helper 是一个专为 SillyTavern
     - Windows: 双击 `start.bat`
     - macOS/Linux: 运行 `./start.sh`
 4. 配置更新后请刷新 SillyTavern 加载新设置
+
+### 集成到脚本中（推荐）
+
+把本项目集成在启动SillyTavern的脚本中，会更加方便。真正做到无感知的更新
+
+```bash
+npm run singleRun --prefix /xxx/haruki_helper
+```
+
+以上命令就是单次运行（singleRun）的命令，启动脚本你完全可以自己写，或者咨询ai
 
 ## 目录结构
 

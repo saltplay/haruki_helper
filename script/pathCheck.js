@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { exec } = require("child_process");
+const {exec} = require("child_process");
 
 const scriptDir = path.dirname(__filename);
 const filePath = path.join(scriptDir, "SillyTavernPath.txt");
@@ -80,7 +80,7 @@ function main() {
         fs.writeFileSync(configPath, JSON.stringify(configData, null, 2));
 
         const content =
-            "请输入SillyTavern路径(例如/Users/xxx/Tools/SillyTavern),注意:要以SillyTavern结尾,不能带有/,不能以换行结尾";
+            "请输入SillyTavern路径，来代替本txt的所有内容。(例如/Users/xxx/Tools/SillyTavern),注意:要以SillyTavern结尾,不能带有/,不能以换行结尾。本文件由haruki_helper生成，是配置路径必须的正常文件，请勿担心";
         if (!fs.existsSync(filePath) || fs.statSync(filePath).size === 0) {
             try {
                 fs.writeFileSync(filePath, content);
