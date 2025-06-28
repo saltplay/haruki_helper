@@ -47,13 +47,21 @@ npm start
 
 ### 进阶使用-集成到脚本中（推荐）
 
-把本项目集成在启动SillyTavern的脚本中，会更加方便。真正做到无感知的更新
+单次运行（singleRun）的命令
 
 ```bash
 npm run singleRun --prefix /xxx/haruki_helper
 ```
 
-以上命令就是单次运行（singleRun）的命令，启动脚本你完全可以自己写，或者咨询ai
+集成到启动脚本的示例(抛砖引玉,您想要怎么写都可以,根据您的系统来,萌新可以问ai求教)
+
+```bash
+npm run singleRun --prefix /xxx/haruki_helper && /xxx/SillyTavern/UpdateAndStart.bat 
+```
+
+也可以集成到维护SillyTavern的脚本.
+
+您可以让ai帮助您生成脚本,让您的SillyTavern娱乐更加灵活自由.
 
 ### 进阶使用-修改仓库
 
@@ -78,7 +86,7 @@ npm run singleRun --prefix /xxx/haruki_helper
 就是这么简单.
 如果您乐意分享的话,完全可以让更多人使用您维护的 预设/正则 仓库.
 
-## 更新维护
+## 更新本项目
 
 一般不需要更新.
 
@@ -90,7 +98,7 @@ $ git reset --hard && git pull origin main
 ## 卸载方法
 
 - Windows/macOS: 删除整个项目文件夹
-- Linux: 执行 `rm -rf haruki_helper`
+- Linux: 删除整个项目文件夹(可以在父目录执行 `rm -rf haruki_helper`)
 
 所有的文件和脚本都在 `haruki_helper` 文件夹中,不用担心残留文件
 
@@ -108,3 +116,5 @@ $ git reset --hard && git pull origin main
 正则和破限规则版权属于原作者 haruki大佬 & kitsch大佬 。
 标签化脚本版权属于 青空莉想做舞台少女的狗大佬。
 二创请看[致开发者](other/致开发者.md)
+对于文件删除等后果概不负责,请自行承担使用/修改本项目的后果
+数据安全第一,请做好备份
